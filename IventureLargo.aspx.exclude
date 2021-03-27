@@ -1,0 +1,392 @@
+<%@ Page Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true"
+	CodeFile="IventureLargo.aspx.cs" Inherits="IventureLargo" Title="Iventure" %>
+
+<%@ Register TagPrefix="cc1" Namespace="WebControlCaptcha" Assembly="WebControlCaptcha" %>
+<%@ Register Assembly="MagicAjax" Namespace="MagicAjax.UI.Controls" TagPrefix="ajax" %>
+<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" runat="Server">
+
+	<script>
+	function Imprimir(){
+	debugger;
+		var idIventure = document.getElementById('<%= txtIdIventure.ClientID %>').value;
+		var w= window.open("BajarIventure.aspx?IdIventure=" + idIventure  ,'BajarSolicitud', 'resizable=1, scrollbars=1, top=30, left=30, width=535'); 
+		w.focus(); 
+	}
+	function getData(cardId)
+	{
+		var url = "GetData.ashx?IdIventure="+document.getElementById('<%= txtIdIventure.ClientID %>').value +"&CardId="+cardId;
+	    //var handler = new ActiveXObject('Microsoft.XMLHTTP');
+	    var handler = GetXmlHttpObject();
+		handler.open('get', url, false);
+		handler.send(null); 
+		document.forms["GatewayData"].DatosEnc.value = handler.responseText;
+		handler = null;
+	}
+
+	function Total(){
+		var aereo = document.getElementById('<%= txtImporteAereo.ClientID %>').value;
+		var estadia = document.getElementById('<%= txtImporteEstadia.ClientID %>').value;
+		var auto = document.getElementById('<%= txtImporteAuto.ClientID %>').value;
+		var total = document.getElementById('<%= txtImporteTotal.ClientID %>');
+		aereo = parseFloat(aereo);
+		estadia = parseFloat(estadia); 
+		auto = parseFloat(auto);
+		if(isNaN(aereo))  aereo = 0;
+		if(isNaN(estadia))  estadia = 0;
+		if(isNaN(auto))  auto = 0;
+		suma = aereo + estadia + auto;
+		total.value = suma;
+	}
+
+	function Submit(){
+		//document.forms["GatewayData"].all("DatosEnc").value = document.getElementById('<%= gatewayData.ClientID %>').value;	
+		var cardId =  document.getElementById('<%= cboTarjeta.ClientID %>').value;
+		if(cardId == ""){
+			document.getElementById('<%= lblSeleccioneTarjeta.ClientID %>').innerText = "Seleccione una tarjeta";
+		}
+		else{
+			document.getElementById('<%= btnPagar.ClientID %>').disabled=true;
+			getData(cardId);
+			document.forms["GatewayData"].submit();
+		}
+	}
+	
+	function CamposRequeridos(source, arguments)
+	{
+		var aereo = document.getElementById('<%= txtImporteAereo.ClientID %>').value;
+		var estadia = document.getElementById('<%= txtImporteEstadia.ClientID %>').value;
+		var auto = document.getElementById('<%= txtImporteAuto.ClientID %>').value;
+		var total = document.getElementById('<%= txtImporteTotal.ClientID %>');
+		aereo = parseFloat(aereo);
+		estadia = parseFloat(estadia); 
+		auto = parseFloat(auto);
+		var err = "";
+		if(!isNaN(aereo)) {
+			//deben estar cargados los datos del aereo
+			var detAereo = document.getElementById('<%= txtDetalle.ClientID %>').value;
+			if(detAereo.length==0){
+				err += "Debe cargar el detalle del paquete<br>";
+			}
+		
+		}
+		if(!isNaN(estadia)){
+			//deben estar cargados los datos de la estadia
+			var detEstadia = document.getElementById('<%= txtEstadia.ClientID %>').value;
+			var pasajeros= document.getElementById('<%= txtPasajeros.ClientID %>').value;
+			if(detEstadia.length==0){
+				err += "Debe cargar el detalle de la estadía<br>";
+			}
+			if(pasajeros.length==0){
+				err += "Debe cargar la cantidad de pasajeros<br>";
+			}
+		}
+		if(!isNaN(auto)){
+			//deben estar cargados los datos del auto
+			var detAuto = document.getElementById('<%= txtDetallesAuto.ClientID %>').value;
+			if(detAuto.length==0){
+				err += "Debe cargar el detalle de los traslados<br>";
+			}
+		}
+		if(err!=""){
+			arguments.IsValid=false;
+			source.innerHTML = err;
+        }
+        else{
+			arguments.IsValid=true;
+        }
+	    return;
+    }                
+
+  
+	</script>
+
+	<div style="overflow: auto;">
+		<ajax:AjaxPanel runat="server" ID="ajxpnl" Height="301px" Width="508px">
+			<div id="divIventure" name="divIventure">
+				<table class="TablaComun" runat="server" id="tblIventure" name="tblIventure">
+					<tr>
+						<td style="background-color: #C0C0C0; height: 20px; text-align: center; font-size: 20px;
+							color: #800000; font-family: 'Berlin Sans FB';" colspan="3">
+							Solicitud</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 20px;">
+							Nro. Solicitud</td>
+						<td style="background-color: white; width: 306px; height: 20px;">
+							<asp:TextBox ID="txtIdIventure" runat="server" Height="20px" Width="113px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 20px;">
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 20px;">
+							Empresa</td>
+						<td style="background-color: white; width: 306px; height: 20px;">
+							<asp:TextBox ID="txtProveedor" runat="server" Height="20px" MaxLength="100" Width="113px"></asp:TextBox>
+							&nbsp;<asp:RequiredFieldValidator ID="RequiredFieldValidator2" runat="server" ControlToValidate="txtProveedor"
+								Display="Dynamic" ErrorMessage="Requerido  "></asp:RequiredFieldValidator></td>
+						<td style="background-color: white; width: 106px; height: 20px;">
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 20px;">
+							Vencimiento</td>
+						<td style="background-color: white; width: 306px; height: 20px;">
+							<asp:TextBox ID="txtVencimiento" runat="server" Height="20px" MaxLength="10" Width="113px"></asp:TextBox>
+							&nbsp; <a href="javascript:cal1.popup();" runat="server" id="linkCal">
+								<img src="images/cal.gif" width="16" height="16" border="0" alt="haga click para seleccionar la fecha"
+									id="IMG1"></a> &nbsp;
+							<asp:RequiredFieldValidator ID="RequiredFieldValidator3" runat="server" ControlToValidate="txtVencimiento"
+								Display="Dynamic" ErrorMessage="Requerido  "></asp:RequiredFieldValidator>
+							&nbsp;<asp:RangeValidator ID="rgvVencimiento" runat="server" ControlToValidate="txtVencimiento"
+								ErrorMessage="Vencimiento Inválido" Display="Dynamic" Type="Date"></asp:RangeValidator></td>
+						<td style="background-color: white; width: 106px; height: 20px;">
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" style="height: 20px; font-size: medium; color: #000080; background-color: #C0C0C0;
+							font-family: 'Berlin Sans FB Demi';">
+							<span style="background-color: #C0C0C0">Paquete</span></td>
+					</tr>
+					<tr>
+						<td style="background-color: white">
+							Tipo</td>
+						<td style="background-color: white; width: 306px;">
+							<asp:DropDownList ID="cboAereo" Font-Size="Small" runat="server">
+								<asp:ListItem Value="Ida y vuelta">Ida y vuelta</asp:ListItem>
+								<asp:ListItem Value="Sólo ida">Sólo ida</asp:ListItem>
+								<asp:ListItem Value="Múltiples destinos">Múltiples destinos</asp:ListItem>
+								<asp:ListItem Value="Sin aéreo">Sin aéreo</asp:ListItem>
+							</asp:DropDownList>
+						</td>
+						<td style="background-color: white; width: 106px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="background-color: white">
+							Detalle</td>
+						<td style="background-color: white; width: 306px;">
+							<asp:TextBox Width="300px" ID="txtDetalle" runat="server" MaxLength="100" Height="88px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; font-size: small;">
+							Importe Paquete</td>
+						<td style="background-color: white; width: 306px;">
+							<asp:TextBox Width="113px" ID="txtImporteAereo" runat="server" MaxLength="21" Height="20px"></asp:TextBox>
+							&nbsp;<asp:RangeValidator ID="RangeValidator4" runat="server" ControlToValidate="txtImporteAereo"
+								ErrorMessage="Importe inválido" MaximumValue="500000000" MinimumValue="0" Type="Double"></asp:RangeValidator></td>
+						<td style="background-color: white; width: 106px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="height: 22px; text-align: left; font-size: medium; color: #000080; font-family: 'Berlin Sans FB Demi';
+							background-color: #C0C0C0;" colspan="3">
+							<span style="background-color: #C0C0C0">Estadía</span></td>
+					</tr>
+					<tr>
+						<td style="background-color: white">
+							Estadía/Ciudad</td>
+						<td style="background-color: white; width: 306px;">
+							<asp:TextBox ID="txtEstadia" runat="server" Height="66px" MaxLength="50" Width="300px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 22px;">
+							Cnt Pasajeros</td>
+						<td style="background-color: white; width: 306px; height: 22px;">
+							<asp:TextBox Width="113px" ID="txtPasajeros" runat="server" MaxLength="50" Height="20px"></asp:TextBox>
+							&nbsp;<asp:RangeValidator ID="RangeValidator5" runat="server" ControlToValidate="txtPasajeros"
+								ErrorMessage="Cantidad de pasajeros inválida" MaximumValue="1000" MinimumValue="1"
+								Type="Double"></asp:RangeValidator></td>
+						<td style="background-color: white; width: 106px; height: 22px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 22px; font-size: small;">
+							Importe Estadía</td>
+						<td style="background-color: white; width: 306px; height: 22px;">
+							<asp:TextBox ID="txtImporteEstadia" runat="server" Height="20px" MaxLength="21" Width="113px"></asp:TextBox>
+							&nbsp;<asp:RangeValidator ID="RangeValidator3" runat="server" ControlToValidate="txtImporteEstadia"
+								ErrorMessage="Importe inválido" MaximumValue="500000000" MinimumValue="0" Type="Double"></asp:RangeValidator></td>
+						<td style="background-color: white; width: 106px; height: 22px;">
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" style="height: 22px; color: #000080; font-size: medium; background-color: #C0C0C0;">
+							<span style="background-color: #C0C0C0; font-family: 'Berlin Sans FB Demi'; color: #000080;">
+								Traslados</span></td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							Detalles</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtDetallesAuto" runat="server" Height="66px" MaxLength="100" Width="300px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px; font-size: small;">
+							Importe Traslados</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtImporteAuto" runat="server" Height="20px" MaxLength="21" Width="113px"></asp:TextBox>
+							&nbsp;<asp:RangeValidator ID="RangeValidator2" runat="server" ControlToValidate="txtImporteAuto"
+								ErrorMessage="Importe inválido" MaximumValue="500000000" MinimumValue="0" Type="Double"></asp:RangeValidator></td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px; font-size: small;">
+							&nbsp;</td>
+						<td style="background-color: white; width: 306px; height: 21px; text-align: right;
+							font-size: small;">
+							<b style="text-align: right">
+								<asp:RangeValidator ID="RangeValidator1" runat="server" ControlToValidate="txtImporteTotal"
+									ErrorMessage="Importe inválido" MaximumValue="500000000" MinimumValue="1" Type="Double"></asp:RangeValidator>
+								&nbsp;<asp:RequiredFieldValidator ID="RequiredFieldValidator1" runat="server" ControlToValidate="txtImporteTotal"
+									Display="Dynamic" ErrorMessage="Requerido  "></asp:RequiredFieldValidator>
+								&nbsp; Importe Total</b></td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							<asp:TextBox ID="txtImporteTotal" runat="server" Height="20px" MaxLength="21" Width="113px"></asp:TextBox>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" style="background-color: #669999; height: 21px; font-size: medium;
+							color: white;">
+							<b>Información del cliente</b></td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							Apellido</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtApellido" runat="server" Height="20px" MaxLength="100" Width="301px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							<asp:RequiredFieldValidator ID="rqvApellido" runat="server" ControlToValidate="txtApellido"
+								Display="Dynamic" ErrorMessage="Requerido"></asp:RequiredFieldValidator>
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							Nombre</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtNombre" runat="server" Height="20px" MaxLength="100" Width="301px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							<asp:RequiredFieldValidator ID="rqvNombre" runat="server" ControlToValidate="txtNombre"
+								Display="Dynamic" ErrorMessage="Requerido"></asp:RequiredFieldValidator>
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							CUIT / CUIL / DNI</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtCUITDNI" runat="server" Height="20px" MaxLength="15" Width="301px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							<asp:RequiredFieldValidator ID="rqvCUITDNI" runat="server" ControlToValidate="txtCUITDNI"
+								Display="Dynamic" ErrorMessage="Requerido"></asp:RequiredFieldValidator>
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							Domicilio</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtDomicilio" runat="server" Height="20px" MaxLength="100" Width="301px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							<asp:RequiredFieldValidator ID="rqvDomicilio" runat="server" ControlToValidate="txtDomicilio"
+								Display="Dynamic" ErrorMessage="Requerido"></asp:RequiredFieldValidator>
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							Teléfonos</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtTelefonos" runat="server" Height="20px" MaxLength="50" Width="301px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							&nbsp;</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							Email</td>
+						<td style="background-color: white; width: 306px; height: 21px;">
+							<asp:TextBox ID="txtEmail" runat="server" Height="20px" MaxLength="100" Width="235px"></asp:TextBox>
+						</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+							<asp:RequiredFieldValidator ID="RequiredFieldValidator5" runat="server" ControlToValidate="txtEmail"
+								Display="Dynamic" ErrorMessage="Requerido"></asp:RequiredFieldValidator>
+							<asp:RegularExpressionValidator ID="RegularExpressionValidator1" runat="server" ControlToValidate="txtEmail"
+								Display="Dynamic" ErrorMessage="Ingrese un email válido" ValidationExpression="\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*"></asp:RegularExpressionValidator>
+						</td>
+					</tr>
+					<tr>
+						<td style="background-color: white; height: 21px;">
+							Tarjeta de crédito</td>
+						<td style="background-color: white; width: 306px; height: 21px;" nowrap=nowrap>
+							<asp:DropDownList ID="cboTarjeta" runat="server">
+							<asp:ListItem Value="">[Seleccione una tarjeta de crédito...]</asp:ListItem>
+							<asp:ListItem Value="1">American Express</asp:ListItem>
+							<asp:ListItem Value="8">Cabal</asp:ListItem>
+							<asp:ListItem Value="2">Diners</asp:ListItem>
+							<asp:ListItem Value="5">Mastercard</asp:ListItem>
+							<asp:ListItem Value="9">Naranja</asp:ListItem>
+							<asp:ListItem Value="21">Nevada</asp:ListItem>							
+							<asp:ListItem Value="14">Visa</asp:ListItem>
+							</asp:DropDownList>
+							</td>
+						<td style="background-color: white; width: 106px; height: 21px;">
+						<asp:Label ID="lblSeleccioneTarjeta" runat="server" ForeColor="Red" Width="116px" ></asp:Label></td>
+					</tr>
+
+					<tr>
+						<td align="center" colspan="3" style="background-color: white">
+							<cc1:CaptchaControl ID="CaptchaControl1" runat="server" Font-Size="12" Text="Ingrese el código de seguridad"
+								Width="361px" CaptchaMaxTimeout="3600"  />
+								<asp:CustomValidator ID="CustomValidator1" runat="server" ClientValidationFunction="CamposRequeridos"
+									ErrorMessage="Mensaje de error"></asp:CustomValidator>
+							<br />
+							<asp:Button ID="btnMail" runat="server" Font-Size="Small" 
+								Text="Reenviar mail" Width="95px" OnClick="btnMail_Click" />
+							<asp:Button ID="btnDarDeAlta" runat="server" Font-Size="Small" OnClick="btnDarDeAlta_Click"
+								Text="Grabar" Width="95px" />
+							<asp:Button ID="btnPagar" runat="server" Font-Size="Small" Text="Pagar" Width="95px" />
+							&nbsp;<asp:Button ID="btnImprimir" runat="server" Font-Size="Small" Text="Imprimir" Width="95px" />
+							&nbsp;<asp:Button ID="btnActualizar" runat="server" Font-Size="Small" OnClick="btnGrabar_Click"
+								Text="Grabar" Width="95px" />
+							<br />
+								</td>
+					</tr>
+				</table>
+			</div>
+		</ajax:AjaxPanel>
+	</div>
+	<br />
+	<span style="font-size: 10pt; color: #ff0000" runat="server" id="lblTenga">* Tenga en
+		cuenta que los datos ingresados al sistema de Travel Pay no serán divulgados, por
+		conscuencia tenga bien tener presente y registrado los datos ingresados debido a
+		que el sistema no permitirá el ingreso mediante usuarios con claves de autenticación
+		que den coincidencia con los datos ingresados en la cuenta de email; nombre y apellido;
+		y CUIT/DNI. *<br />
+	</span>
+	<asp:HiddenField ID="gatewayData" runat="server" />
+	<script>
+	var cal1 = new calendar1(document.getElementById("<%= txtVencimiento.ClientID %>"));
+	cal1.year_scroll = true;
+	cal1.time_comp = false;
+	</script>
+
+</asp:Content>
+<asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder2" runat="Server">
+	<form id="GatewayData" action="https://services.nps.com.ar/index.php" method="post">
+		<input id="DatosEnc" name="DatosEnc" type="hidden" />
+		<input id="egp_MerchantID " name="egp_MerchantID" type="hidden" value="test_travelpay" />
+		<input id="dev" name="dev" type="hidden" value="1" />
+	</form>
+</asp:Content>

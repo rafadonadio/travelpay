@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Iventure>
+  <Usuario>
+	<Nombre>admepay</Nombre>
+	<Clave>admepay</Clave>
+  </Usuario>
+  <Cliente>
+	<Nombre>clienteEPay</Nombre>
+	<Apellido>nom</Apellido>
+	<CUITDNI>223322332233232</CUITDNI>
+	<Domicilio>e</Domicilio>
+	<Email>mmassera@atento.com.ar</Email>
+	<Telefonos>e</Telefonos>
+  </Cliente>
+  <Detalle>DetalleWS</Detalle>
+  <Importe>55</Importe>
+  <CantidadCuotas>2</CantidadCuotas>
+</Iventure>

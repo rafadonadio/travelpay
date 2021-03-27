@@ -1,0 +1,481 @@
+using System;
+using System.Data;
+using System.Configuration;
+using System.Collections;
+using System.Web;
+using System.Web.Security;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.WebParts;
+using System.Web.UI.HtmlControls;
+using Core;
+using System.Text;
+
+public partial class IventureLargo : Page, IBasicPage
+{
+	Core.Iventure iventure = null;
+	public Boolean LoginVisible { get { return true; } }
+	public Control ControlFocus { get { return txtDetalle; } }
+	protected void Page_Load(object sender, EventArgs e)
+	{
+		rgvVencimiento.MaximumValue = DateTime.Today.AddYears(10).ToShortDateString();
+		rgvVencimiento.MinimumValue = DateTime.Today.AddYears(-10).ToShortDateString();
+		rgvVencimiento.ErrorMessage = "Vencimiento Inválido. Valores entre " + rgvVencimiento.MinimumValue + " y " +rgvVencimiento.MaximumValue ;
+		txtImporteAereo.Attributes.Add("onchange", "Total();");
+		txtImporteEstadia.Attributes.Add("onchange", "Total();");
+		txtImporteAuto.Attributes.Add("onchange", "Total();");
+		btnPagar.Attributes.Add("onclick", "Submit();");
+		btnImprimir.Attributes.Add("onclick", "Imprimir();");
+		
+		if (!IsPostBack)
+		{
+			CargarIventure();
+			HabilitarControles();
+		}
+	}
+
+	private void DownAndPrint()
+	{
+		txtIdIventure.Enabled = false;
+		txtProveedor.Enabled = false;
+		btnActualizar.Visible = false;
+		btnPagar.Visible = false;
+		btnDarDeAlta.Visible = false;
+		txtVencimiento.Enabled = false;
+		txtDetalle.Enabled = false;
+		cboAereo.Enabled = false;
+		txtImporteAereo.Enabled = false;
+		txtEstadia.Enabled = false;
+		txtPasajeros.Enabled = false;
+		txtImporteEstadia.Enabled = false;
+		txtDetallesAuto.Enabled = false;
+		txtImporteAuto.Enabled = false;
+		txtNombre.Enabled = false;
+		txtApellido.Enabled = false;
+		txtCUITDNI.Enabled = false;
+		txtDomicilio.Enabled = false;
+		txtEmail.Enabled = false;
+		txtTelefonos.Enabled = false;
+		CaptchaControl1.Visible = false;
+		lblTenga.Visible = false;
+		string script = "<script>CheckDown();</script>";
+		ClientScript.RegisterStartupScript(this.GetType(), DateTime.Now.ToFileTime().ToString(), script);
+
+	}
+
+	private void AbrirWord()
+	{
+		Response.ContentType = "application/application/msword";
+		Response.AddHeader("Content-disposition", "attachment;filename=\"Solicitud.doc\"");
+		Response.Clear();
+		Response.Buffer = true;
+		Response.Expires = -1;
+		System.IO.StringWriter sw = new System.IO.StringWriter();
+		HtmlTextWriter writer = new HtmlTextWriter(sw);
+		//tblIventure.RenderControl(writer);
+		txtIdIventure.RenderControl(writer);
+		byte[] b = Encoding.UTF7.GetBytes(sw.ToString());
+		Response.BinaryWrite(b);
+		Response.End();
+	}
+	private void HabilitarControles()
+	{
+		txtImporteTotal.Enabled = false;
+		txtIdIventure.Enabled = false;
+		txtProveedor.Enabled = false;
+		btnActualizar.Visible = false;
+		btnPagar.Visible = false;
+		btnDarDeAlta.Visible = false;
+		btnMail.Visible = false;
+		btnImprimir.Visible = false;
+		cboTarjeta.Visible = false;
+		lblSeleccioneTarjeta.Visible = false;
+
+		Usuario usu = (Usuario)(Session["Usuario"]);
+		if (usu == null || usu.IsSuper || usu.IsCliente || (iventure != null && (iventure.Estado == "CANCELADO" || iventure.Estado == "PAGADO")))
+		{
+			txtVencimiento.Enabled = false;
+			txtDetalle.Enabled = false;
+			cboAereo.Enabled = false;
+			txtImporteAereo.Enabled = false;
+			txtEstadia.Enabled = false;
+			txtPasajeros.Enabled = false;
+			txtImporteEstadia.Enabled = false;
+			txtDetallesAuto.Enabled = false;
+			txtImporteAuto.Enabled = false;
+			txtNombre.Enabled = false;
+			txtApellido.Enabled = false;
+			txtCUITDNI.Enabled = false;
+			txtDomicilio.Enabled = false;
+			txtEmail.Enabled = false;
+			txtTelefonos.Enabled = false;
+			CaptchaControl1.Visible = false;
+		}
+		if (usu == null || (usu.IsCliente && (iventure != null && iventure.Estado != "CANCELADO" && iventure.Estado != "PAGADO")))
+		{
+			btnPagar.Visible = true;
+			cboTarjeta.Visible = true;
+			lblSeleccioneTarjeta.Visible = true;
+			btnImprimir.Visible = true;
+		}
+		if ((usu != null && (usu.IsAdminProveedor || usu.IsVendedor)) && (iventure != null && iventure.Estado != "CANCELADO" && iventure.Estado != "PAGADO"))
+		{
+			btnActualizar.Visible = true;
+			btnMail.Visible = true;
+			txtNombre.Enabled = false;
+			txtApellido.Enabled = false;
+			txtCUITDNI.Enabled = false;
+			txtDomicilio.Enabled = false;
+			txtEmail.Enabled = false;
+			txtTelefonos.Enabled = false;
+		}
+		if ((usu != null && (usu.IsAdminProveedor || usu.IsVendedor)) && iventure == null)
+		{
+			btnDarDeAlta.Visible = true;
+			txtProveedor.Text = ((Proveedor)(Session["Proveedor"])).RazonSocial;
+		}
+		if (iventure != null && (iventure.Estado == "CANCELADO" || iventure.Estado == "PAGADO" || usu==null || usu.IsCliente))
+			linkCal.HRef = "javascript:alert('No se puede modificar el vencimiento');";
+		else
+			linkCal.HRef = "javascript:cal1.popup();";
+	}
+	private void CargarIventure()
+	{
+		bool existIdIventure = false;
+		string sIdIventure = null;
+		if (Request.Path.Length < Request.RawUrl.Length)
+		{
+			string parameters = Request.RawUrl.Substring(Request.Path.Length + 1);
+			string queryString = Cryptography.Desencriptar(parameters);
+			string[] values = queryString.Split("=".ToCharArray());
+			for (int i = 0; i < values.Length; i++) {
+				if (values[i].ToLower() == "idiventure") {
+					existIdIventure = true;
+					if (i + 1 < values.Length) {
+						sIdIventure = values[i + 1];
+					}
+					break;
+				}
+			}
+		}
+		if (existIdIventure)
+		{
+			int idIventure = Convert.ToInt32(sIdIventure);
+			iventure = FacadeDao.GetIventure(idIventure);
+			if (iventure != null)
+			{
+				txtIdIventure.Text = iventure.Id.ToString();
+				txtIdIventure.Enabled = false;
+				txtProveedor.Text = iventure.Proveedor.RazonSocial;
+				txtVencimiento.Text = ((iventure.Vencimiento.HasValue) ? iventure.Vencimiento.Value.ToShortDateString() : "");
+				txtDetalle.Text = iventure.DetalleAereo;
+				cboAereo.SelectedIndex = cboAereo.Items.IndexOf(cboAereo.Items.FindByValue(iventure.TipoAereo));
+				txtImporteAereo.Text = iventure.ImporteAereo.ToString();
+				txtEstadia.Text = iventure.CiudadEstadia;
+				txtPasajeros.Text = iventure.PasajerosEstadia.ToString();
+				txtImporteEstadia.Text = iventure.ImporteEstadia.ToString();
+				txtDetallesAuto.Text = iventure.DetalleAutomovil;
+				txtImporteAuto.Text = iventure.ImporteAutomovil.ToString();
+				txtImporteTotal.Text = iventure.ImporteTotal.ToString();
+				txtNombre.Text = iventure.Cliente.Nombre;
+				txtApellido.Text = iventure.Cliente.Apellido;
+				txtCUITDNI.Text = iventure.Cliente.CuitDni;
+				txtDomicilio.Text = iventure.Cliente.Domicilio;
+				txtEmail.Text = iventure.Cliente.Email;
+				txtTelefonos.Text = iventure.Cliente.Telefonos;
+			}
+		}
+	}
+	protected void btnDarDeAlta_Click(object sender, EventArgs e)
+	{
+		try
+		{
+			if (CaptchaControl1.IsValid)
+			{
+				Core.Iventure ivent = new Core.Iventure();
+				ivent.Proveedor = new Proveedor();
+				ivent.Proveedor.Id = ((Proveedor)(Session["Proveedor"])).Id;
+				ivent.Vencimiento = Convert.ToDateTime(txtVencimiento.Text.Trim());
+				ivent.DetalleAereo = txtDetalle.Text.Trim();
+				ivent.TipoAereo = cboAereo.SelectedValue;
+				ivent.ImporteAereo = Convert.ToDouble(txtImporteAereo.Text.Trim());
+				ivent.CiudadEstadia = txtEstadia.Text.Trim();
+				ivent.PasajerosEstadia = Convert.ToInt32(txtPasajeros.Text.Trim());
+				ivent.ImporteEstadia = Convert.ToDouble(txtImporteEstadia.Text.Trim());
+				ivent.DetalleAutomovil = txtDetallesAuto.Text.Trim();
+				ivent.ImporteAutomovil = Convert.ToDouble(txtImporteAuto.Text.Trim());
+				ivent.ImporteTotal = Convert.ToDouble(txtImporteTotal.Text.Trim());
+				Cliente cliente = new Cliente();
+				ivent.Cliente = cliente;
+				cliente.Nombre = txtNombre.Text.Trim();
+				cliente.Apellido = txtApellido.Text.Trim();
+				cliente.CuitDni = txtCUITDNI.Text.Trim();
+				cliente.Domicilio = txtDomicilio.Text.Trim();
+				cliente.Email = txtEmail.Text.Trim();
+				cliente.Telefonos = txtTelefonos.Text.Trim();
+				string pass = cliente.Nombre.ToLower() + DateTime.Now.GetHashCode().ToString().Replace("-", "").Trim();
+				Usuario usu = new Usuario();
+				usu.Nombre = cliente.CuitDni;
+				usu.Password = pass;
+				usu.Email = cliente.Email;
+				int result = FacadeDao.CrearIventure(ref ivent, usu, Session["Logo"]);
+				if (result == 1)
+				{
+					Response.Redirect("MisIventures.aspx");
+				}
+				else if (result == -1 || result == -4)
+				{
+					throw (new Exception("Email de cliente existente"));
+				}
+				else if (result == -2 || result == -3)
+				{
+					throw (new Exception("Cuit de cliente ya registrado"));
+				}
+				else
+				{
+					throw (new Exception("Ocurrió un error en el alta de la solicitud"));
+				}
+			}
+			else
+				throw (new Exception(CaptchaControl1.ErrorMessage));
+		}
+		catch (Exception ex)
+		{
+			//Logger.EscribirEventLog(ex);
+			string script = "alert('" + ex.Message +"');";
+			ClientScript.RegisterStartupScript(this.GetType(), DateTime.Now.ToFileTime().ToString(), script);
+		}
+
+	}
+	protected void btnPagar_Click(object sender, EventArgs e)
+	{
+		string msg = DataNPS();
+		Response.Redirect("Pago.aspx?egp_data=" + msg);
+		/*string msg = DataNPS();
+		PostSubmitter post = new PostSubmitter();
+		post.Url = "http://localhost/TravelPay/Pago.aspx";
+		post.PostItems.Add("egp_data", "msg");
+		post.PostItems.Add("rel_code", "1102");
+		post.PostItems.Add("FREE_TEXT", "c# jobs");
+		post.PostItems.Add("SEARCH", "");
+		post.Type = PostSubmitter.PostTypeEnum.Post;
+		string result = post.Post();*/
+
+		/*System.Net.HttpWebRequest HttpWReq = (System.Net.HttpWebRequest)System.Net.HttpWebRequest.Create("http://localhost/TravelPay/Pago.aspx");
+		ASCIIEncoding encoding=new ASCIIEncoding();
+		string postData="username=foo";
+		postData += ( "&password=boo");
+		byte[] data = encoding.GetBytes(postData);
+		HttpWReq.Method = "POST";
+		HttpWReq.ContentType = "application/x-www-form-urlencoded";
+		HttpWReq.ContentLength = data.Length;
+		System.IO.Stream newStream = HttpWReq.GetRequestStream();
+		newStream.Write(data,0,data.Length);
+		newStream.Close();
+*/
+	}
+
+	private void CargarDataGateway() {
+		gatewayData.Value = DataNPS();
+		
+	}
+	private string DataNPS()
+	{
+		Usuario usu = (Usuario)(Session["Usuario"]);
+		if ((usu == null || usu.IsCliente )|| (iventure != null && iventure.Estado == "PENDIENTE"))
+		{
+			StringBuilder msg = new StringBuilder();
+			msg.Append("egp_MerchantID=").Append(ConfigurationManager.AppSettings["MerchantID"]);
+			msg.Append("|egp_TrnType=").Append(ConfigurationManager.AppSettings["TrnType"]);
+			msg.Append("|egp_Payments=").Append(ConfigurationManager.AppSettings["Payments"]);
+			msg.Append("|egp_Plan=").Append(ConfigurationManager.AppSettings["Plan"]);
+			msg.Append("|egp_Currency=").Append(ConfigurationManager.AppSettings["Moneda"]);
+			msg.Append("|egp_Amount=").Append(Convert.ToDouble(txtImporteTotal.Text).ToString("F2").Replace(",", "."));
+			msg.Append("|egp_UserID=").Append(txtEmail.Text);
+			msg.Append("|egp_OrderID=").Append(txtIdIventure.Text);
+			msg.Append("|egp_UrlOk=").Append(ConfigurationManager.AppSettings["UrlOk"]);
+			msg.Append("|egp_UrlError=").Append(ConfigurationManager.AppSettings["UrlError"]);
+			msg.Append("|egp_MailCom=").Append(ConfigurationManager.AppSettings["MailCom"]);
+			msg.Append("|egp_UrlBack=").Append(ConfigurationManager.AppSettings["UrlError"]);
+			msg.Append("|egp_CardId=14");
+			return Core.NpsEncripterHelper.Encrypt(msg.ToString(), ConfigurationManager.AppSettings["Key"]);
+		}
+		else { 
+			return "";
+		}
+	}
+	protected void btnGrabar_Click(object sender, EventArgs e)
+	{
+		try
+		{
+			if (CaptchaControl1.IsValid)
+			{
+				Core.Iventure ivent = new Core.Iventure();
+				ivent.Id = Convert.ToInt32(txtIdIventure.Text.Trim());
+				ivent.Proveedor = new Proveedor();
+				ivent.Proveedor.Id = ((Proveedor)(Session["Proveedor"])).Id;
+				ivent.Vencimiento = Convert.ToDateTime(txtVencimiento.Text.Trim());
+				ivent.DetalleAereo = txtDetalle.Text.Trim();
+				ivent.TipoAereo = cboAereo.SelectedValue;
+				ivent.ImporteAereo = Convert.ToDouble(txtImporteAereo.Text.Trim());
+				ivent.CiudadEstadia = txtEstadia.Text.Trim();
+				ivent.PasajerosEstadia = Convert.ToInt32(txtPasajeros.Text.Trim());
+				ivent.ImporteEstadia = Convert.ToDouble(txtImporteEstadia.Text.Trim());
+				ivent.DetalleAutomovil = txtDetallesAuto.Text.Trim();
+				ivent.ImporteAutomovil = Convert.ToDouble(txtImporteAuto.Text.Trim());
+				ivent.ImporteTotal = Convert.ToDouble(txtImporteTotal.Text.Trim());
+				int result = FacadeDao.ActualizarIventure(ivent);
+				if (result == 1)
+				{
+					Response.Redirect("MisIventures.aspx");
+				}
+				else
+				{
+					throw (new Exception("Ocurrió un error en la actualización de la solicitud"));
+				}
+			}
+			else
+			{
+				throw (new Exception(CaptchaControl1.ErrorMessage));
+			}
+		}
+		catch (Exception ex)
+		{
+			//Logger.EscribirEventLog(ex);
+			string script = "alert('" + ex.Message + "');";
+			ClientScript.RegisterStartupScript(this.GetType(), DateTime.Now.ToFileTime().ToString(), script);
+		}
+
+	}
+	protected void btnMail_Click(object sender, EventArgs e)
+	{
+		Core.Iventure iventure = FacadeDao.GetIventure(Convert.ToInt32(txtIdIventure.Text));
+		string queryString = "IdIventure=" + iventure.Id.ToString();
+		queryString = Cryptography.Encriptar(queryString);
+		StringBuilder body = new StringBuilder();
+		body.Append("<table align=\"center\" border=\"2\">");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: #C0C0C0; height: 20px; text-align: center; font-size: 20px;color: #800000; font-family: 'Berlin Sans FB';\" colspan=\"3\">Solicitud</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white; \" >Nro. Solicitud</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 20px;\">" + iventure.Id.ToString() + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 20px;\"></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white; \" >Empresa</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 20px;\">" + iventure.Proveedor.RazonSocial + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 20px;\"></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white; \">Vencimiento</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 20px;\">" + iventure.Vencimiento.Value.ToShortDateString() + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 20px;\"></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td colspan=\"3\" style=\"height: 20px; font-size: medium; color: #000080; background-color: #C0C0C0;\"><span style=\"font-family: 'Berlin Sans FB Demi'; color: #000080;\" class=\"style1\">Paquete</span></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white\">Tipo</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px;\">" + iventure.TipoAereo + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white\">Detalle</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px;\">" + iventure.DetalleAereo + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white; font-size: small;\" >Importe Paquete</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px;\">" + iventure.ImporteAereo.ToString("F2") + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"height: 22px; text-align: left; font-size: medium; color: #000080; font-family: 'Berlin Sans FB Demi'; background-color: #C0C0C0;\" colspan=\"3\"><span class=\"style1\">Estad&iacute;a</span></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white\" >Estad&iacute;a/Ciudad</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px;\">" + iventure.CiudadEstadia + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\" >Pasajeros</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 22px;\">" + iventure.PasajerosEstadia.ToString() + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 22px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white; font-size: small;\" >Importe Estad&iacute;a</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 22px;\">" + iventure.ImporteEstadia.ToString("F2") + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 22px;\"></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td colspan=\"3\" style=\"height: 22px; text-align: left; font-size: medium; color: #000080; font-family: 'Berlin Sans FB Demi'; background-color: #C0C0C0;\" colspan=\"3\">Traslados</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\">Detalles</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.DetalleAutomovil + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white; font-size: small;\">Importe Traslados</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.ImporteAutomovil.ToString("F2") + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white; font-size: small;\" >&nbsp;</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px; text-align: right;font-size: small;\"><b style=\"text-align: right\">&nbsp;&nbsp; Importe Total</b></td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">" + iventure.ImporteTotal.ToString("F2") + "</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td colspan=\"3\" style=\"background-color: #669999; height: 21px; font-size: medium;color: white;\"><b>Informaci&oacute;n del cliente</b></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\" >Apellido</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.Cliente.Apellido + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\" >Nombre</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.Cliente.Nombre + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\" >CUIT / CUIL DNI</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.Cliente.CuitDni + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\">Domicilio</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.Cliente.Domicilio + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\" >Tel&eacute;fonos</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.Cliente.Telefonos + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td style=\"background-color: white;\" >Email</td>");
+		body.Append("		<td style=\"background-color: white; width: 306px; height: 21px;\">" + iventure.Cliente.Email + "</td>");
+		body.Append("		<td style=\"background-color: white; width: 106px; height: 21px;\">&nbsp;</td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td colspan=\"3\" style=\"background-color: #669999; height: 21px; font-size: medium;color: white;\"><b>Pagar la solicitud</b></td>");
+		body.Append("	</tr>");
+		body.Append("	<tr>");
+		body.Append("		<td colspan=\"3\" align=\"center\" style=\"background-color: white; width: 306px; height: 21px;\"><a href=\"" + ConfigurationManager.AppSettings["Dominio"] + "Iventure.aspx?" + queryString + "\">Pagar la solicitud</a></td>");
+		body.Append("	</tr>");
+		body.Append("</table>");
+		try
+		{
+			FacadeDao.EnviarMail(iventure.Cliente.Email, "Tiene una solicitud de '" + iventure.Proveedor.RazonSocial + "' en Travel Pay.", body.ToString(), Session["Logo"], true);
+			string script = "alert('Se ha enviado el mail correctamente');";
+			ClientScript.RegisterStartupScript(this.GetType(), DateTime.Now.ToFileTime().ToString(), script);
+		}
+		catch
+		{
+			string script = "alert('Hubo un problema al enviar el mail');";
+			ClientScript.RegisterStartupScript(this.GetType(), DateTime.Now.ToFileTime().ToString(), script);
+		}
+	}
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Iventure>
+  <Usuario>
+	<Nombre>456</Nombre>
+	<Clave>456</Clave>
+  </Usuario>
+  <Cliente>
+	<Nombre>Juan</Nombre>
+	<Apellido>Perez</Apellido>
+	<CUITDNI>11223334445</CUITDNI>
+	<Domicilio>Calle "1" piso 2</Domicilio>
+	<Email>veromassera@yahoo.com</Email>
+	<Telefonos></Telefonos>
+  </Cliente>
+  <Detalle>DetalleWS</Detalle>
+  <Importe>55</Importe>
+  <CantidadCuotas>2</CantidadCuotas>
+</Iventure>

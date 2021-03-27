@@ -1,0 +1,150 @@
+<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="MasterPageTravel" %>
+<%@ Register Src="Controles/ControlAcceso.ascx" TagName="ControlAcceso" TagPrefix="uc3" %>
+<%@ Register Src="Controles/Login.ascx" TagName="Login" TagPrefix="uc1" %>
+<%@ Register Src="Controles/Noticias.ascx" TagName="Noticias" TagPrefix="uc2" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+	<title>TravelPay</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<meta http-equiv="Refresh" content="3600;url=http://www.travelpay.com.ar/Index2.aspx">
+	<script language="JavaScript" src="calendar1.js"></script>
+	<script language="javascript" src="Scripts/Scripts.js" />
+
+	<!-- Date only with year scrolling -->
+	<!-- American format mm/dd/yyyy -->
+
+	<script language="JavaScript" type="text/JavaScript">
+    <!--
+     function swapImgRestore() { 
+      var i,x,a=document.sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+    }
+
+    function preloadImages() { 
+      var d=document; if(d.images){ if(!d.p) d.p=new Array();
+        var i,j=d.p.length,a=preloadImages.arguments; for(i=0; i<a.length; i++)
+        if (a[i].indexOf("#")!=0){ d.p[j]=new Image; d.p[j++].src=a[i];}}
+    }
+
+    function findObj(n, d) { 
+      var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+        d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+      if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+      for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=findObj(n,d.layers[i].document);
+      if(!x && d.getElementById) x=d.getElementById(n); return x;
+    }
+
+    function swapImage() { 
+      var i,j=0,x,a=swapImage.arguments; document.sr=new Array; for(i=0;i<(a.length-2);i+=3)
+       if ((x=findObj(a[i]))!=null){document.sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+    }
+    //-->
+	</script>
+
+	<link href="css/default.css" rel="stylesheet" type="text/css">
+	<style type="text/css">
+        .style1
+        {
+            text-align: justify;
+            padding-left: 3px;
+            padding-right: 3px;
+            padding-top: 5px;
+        }
+        .style2
+        {
+            background-color: #FFFFFF;
+        }
+    </style>
+</head>
+<body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" bgcolor="#666666">
+	<form id="form1" runat="server">
+		<table width="100%" height="100%" border="0" cellpadding="0" cellspacing="0" style="background-color: #666666">
+			<tr><td style="width: 176px; background-color: #666666;">
+					&nbsp;</td>
+				<td align="center" valign="top" style="width: 907px; background-color: #666666;">
+					<table width="770" height="600" border="0" cellpadding="0" cellspacing="0">
+						<tr id="Encabezado" name="Encabezado">
+							<td align="center" height="131" cellpadding="0" cellspacing="0" valign="top" style="border: thin solid #666666;
+								width: 777px; height: 9px; background-color: #FFFFFF;">
+								<img runat="server" id="imgLogo" src="Images/travelpay.png" /></td>
+						</tr>
+						<tr id="FinEncabezado" name="FinEncabezado">
+							<td valign="top" style="height: 9px; width: 777px; border-top-width: thin; border-left-width: thin;
+								border-left-color: green; border-bottom-width: thin; border-bottom-color: green;
+								border-top-color: green; border-right-width: thin; border-right-color: green;">
+								<img src="images/linie.gif" width="770" height="9"></td>
+						</tr>
+						<tr>
+							<td height="390" id="celdaBody" name="celdaBody" valign="top" align="center" style="border-right: thin solid #666666;
+								border-top: thin solid #666666; border-left: thin solid #666666; height: 9px; border-bottom-width: thin; border-bottom-color: green;" class="style2">
+								<table width="100%" border="0" cellpadding="0" cellspacing="0" align="center">
+									<tr align="center">
+										<td id="celdaLogin" runat="server" name="celdaLogin" align="left" style="width: 13%;
+											height: 402px; background-color: white; border-top-style: none; text-align: left;"
+											valign="top">
+											<uc1:Login ID="Login1" runat="server" />
+										</td>
+										<td width="100%" valign="top" style="background-color: white; height: 402px; width: 34%;
+											border-top-style: none;" align="center">
+											<table width="100%" align="center">
+												<tr id="filaTitulo" name="filaTitulo" align="center">
+													<td align="Center" style="text-align: center; border-right: black 0px solid;
+														border-top: black 0px solid; border-left: black 0px solid; border-bottom: black 0px solid;">
+														<uc3:ControlAcceso ID="ControlAcceso1" runat="server" />
+														<asp:Label ID="lblTitulo" runat="server" CssClass="Titulos" EnableTheming="True"></asp:Label></td>
+												</tr>
+												<tr id="filaFecha" name="filaFecha" align="center">
+													<td align="right">
+														<asp:Label ID="lblFecha" runat="server" CssClass="will"></asp:Label></td>
+												</tr>
+												<tr align="center">
+													<td align="Center" style="text-align: center; height: 236px;" >
+														&nbsp; &nbsp;&nbsp;
+														<br />
+														<asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server" >
+															<img src="Images/travelpay.png" style="height: 90px; width: 128px" /><br />
+															NPS&nbsp; y Secure ePayments son nuestros Gateways de pagos recomendado para que
+															nuestros clientes puedan cobrar con la seguridad y el respaldo de empresas homolagadas
+															por las tarjetas de crédito. A travs de su formulario de pagos permiten autorizar
+															operaciones de pagos en forma on line sin necesidad de invertir en un sistema de
+															seguridad o gateway propio.
+														</asp:ContentPlaceHolder>
+														<br />
+														<br />
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+							</td>
+						</tr>
+						<tr id="FilaFooter" name="FilaFooter">
+							<td height="41" valign="top" style="width: 777px; height: 21px; background-color: #FFFFFF; border-right: #666666 thin solid; vertical-align: top; border-left: #666666 thin solid; border-bottom: #666666 thin solid;"
+								class="style1">
+								<table width="100%" border="0" cellpadding="0" cellspacing="0">
+									<tr>
+										<td width="770" height="2" valign="top" colspan=2>
+											<img src="images/spacer.gif" width="1" height="1"></td>
+									</tr>
+									<tr>
+										<td width="385" align=left class="will" valign="top">
+										Travelpay Copyright 2008</td>
+										<td width="385" align=right class="will" valign="top">
+										<a href="http://www.mfdsolutions.com.ar" target="_blank"><span style="color: #000000; text-decoration: underline">Powered by MFD SOLUTIONS</span></a></td>
+									</tr>
+								</table>
+								
+							</td>
+						</tr>
+					</table>
+				</td>
+				<td style="width: 176px; background-color: #666666;">
+					&nbsp;</td>
+			</tr>
+		</table>
+	</form>
+	<asp:ContentPlaceHolder ID="ContentPlaceHolder2" runat="server">
+	</asp:ContentPlaceHolder>
+</body>
+</html>

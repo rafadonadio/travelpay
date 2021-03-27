@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:i0="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://www.epayments.hsbc.com.ar/webservices/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://www.epayments.hsbc.com.ar/webservices/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:import namespace="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" location="https://www.epayments.hsbc.com.ar/DispacherWS/PU_DispatcherWS.asmx?schema=WSPU_GetOrderDetailsResp" />
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://www.epayments.hsbc.com.ar/webservices/">
+      <s:import namespace="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" />
+      <s:element name="ExternalDipatcher">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="xml" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="appId" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ExternalDipatcherResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ExternalDipatcherResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrders">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ticket" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="shopCode" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrdersResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrdersResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any namespace="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="string" nillable="true" type="s:string" />
+      <s:element name="WSPU_GetOrderDetailsResp" nillable="true">
+        <s:complexType>
+          <s:sequence>
+            <s:any namespace="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="ExternalDipatcherSoapIn">
+    <wsdl:part name="parameters" element="tns:ExternalDipatcher" />
+  </wsdl:message>
+  <wsdl:message name="ExternalDipatcherSoapOut">
+    <wsdl:part name="parameters" element="tns:ExternalDipatcherResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersSoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrders" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersSoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrdersResponse" />
+  </wsdl:message>
+  <wsdl:message name="ExternalDipatcherHttpGetIn">
+    <wsdl:part name="xml" type="s:string" />
+    <wsdl:part name="appId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ExternalDipatcherHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersHttpGetIn">
+    <wsdl:part name="ticket" type="s:string" />
+    <wsdl:part name="shopCode" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersHttpGetOut">
+    <wsdl:part name="Body" element="tns:WSPU_GetOrderDetailsResp" />
+  </wsdl:message>
+  <wsdl:message name="ExternalDipatcherHttpPostIn">
+    <wsdl:part name="xml" type="s:string" />
+    <wsdl:part name="appId" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="ExternalDipatcherHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersHttpPostIn">
+    <wsdl:part name="ticket" type="s:string" />
+    <wsdl:part name="shopCode" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrdersHttpPostOut">
+    <wsdl:part name="Body" element="tns:WSPU_GetOrderDetailsResp" />
+  </wsdl:message>
+  <wsdl:portType name="PU_DispatcherWSSoap">
+    <wsdl:operation name="ExternalDipatcher">
+      <wsdl:input message="tns:ExternalDipatcherSoapIn" />
+      <wsdl:output message="tns:ExternalDipatcherSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrders">
+      <wsdl:input message="tns:GetOrdersSoapIn" />
+      <wsdl:output message="tns:GetOrdersSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="PU_DispatcherWSHttpGet">
+    <wsdl:operation name="ExternalDipatcher">
+      <wsdl:input message="tns:ExternalDipatcherHttpGetIn" />
+      <wsdl:output message="tns:ExternalDipatcherHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrders">
+      <wsdl:input message="tns:GetOrdersHttpGetIn" />
+      <wsdl:output message="tns:GetOrdersHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="PU_DispatcherWSHttpPost">
+    <wsdl:operation name="ExternalDipatcher">
+      <wsdl:input message="tns:ExternalDipatcherHttpPostIn" />
+      <wsdl:output message="tns:ExternalDipatcherHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrders">
+      <wsdl:input message="tns:GetOrdersHttpPostIn" />
+      <wsdl:output message="tns:GetOrdersHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="PU_DispatcherWSSoap" type="tns:PU_DispatcherWSSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="ExternalDipatcher">
+      <soap:operation soapAction="http://www.epayments.hsbc.com.ar/webservices/ExternalDipatcher" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrders">
+      <soap:operation soapAction="http://www.epayments.hsbc.com.ar/webservices/GetOrders" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PU_DispatcherWSHttpGet" type="tns:PU_DispatcherWSHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="ExternalDipatcher">
+      <http:operation location="/ExternalDipatcher" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrders">
+      <http:operation location="/GetOrders" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="PU_DispatcherWSHttpPost" type="tns:PU_DispatcherWSHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="ExternalDipatcher">
+      <http:operation location="/ExternalDipatcher" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrders">
+      <http:operation location="/GetOrders" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="PU_DispatcherWS">
+    <documentation xmlns="http://schemas.xmlsoap.org/wsdl/" />
+    <wsdl:port name="PU_DispatcherWSSoap" binding="tns:PU_DispatcherWSSoap">
+      <soap:address location="https://www.epayments.hsbc.com.ar/DispacherWS/PU_DispatcherWS.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PU_DispatcherWSHttpGet" binding="tns:PU_DispatcherWSHttpGet">
+      <http:address location="https://www.epayments.hsbc.com.ar/DispacherWS/PU_DispatcherWS.asmx" />
+    </wsdl:port>
+    <wsdl:port name="PU_DispatcherWSHttpPost" binding="tns:PU_DispatcherWSHttpPost">
+      <http:address location="https://www.epayments.hsbc.com.ar/DispacherWS/PU_DispatcherWS.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

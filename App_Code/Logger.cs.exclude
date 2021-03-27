@@ -1,0 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Diagnostics;
+
+namespace Core
+{
+    public class Logger
+    {
+        static Logger()
+        {
+            if (!EventLog.SourceExists("MFD"))
+            {
+                EventLog.CreateEventSource("MFD-TRAVELPAY", "MFD");
+            }
+        }
+
+        public static void EscribirEventLog(string msg)
+        {
+			EventLog log = new EventLog("MFD", System.Environment.MachineName, "MFD-TRAVELPAY");
+            log.WriteEntry(msg, EventLogEntryType.Error);
+        }
+        public static void EscribirEventLog(Exception ex)
+        {
+            EscribirEventLog(ex.Message);
+        }
+
+    }
+}

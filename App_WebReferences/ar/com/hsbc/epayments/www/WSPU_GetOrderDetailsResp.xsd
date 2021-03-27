@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:mstns="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" xmlns="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/WSPU_GetOrderDetailsResp.xsd" id="WSPU_GetOrderDetailsResp" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element msdata:IsDataSet="true" name="WSPU_GetOrderDetailsResp">
+    <xs:complexType>
+      <xs:choice maxOccurs="unbounded">
+        <xs:element name="Order">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element minOccurs="0" name="OrderId" type="xs:int" />
+              <xs:element minOccurs="0" name="OrderCode" type="xs:string" />
+              <xs:element minOccurs="0" name="ShopCode" type="xs:string" />
+              <xs:element minOccurs="0" name="OrderStatusTimestamp" type="xs:dateTime" />
+              <xs:element minOccurs="0" name="OrderStatusTypeDesc" type="xs:string" />
+              <xs:element minOccurs="0" name="OrderTransferMethodType" type="xs:string" />
+              <xs:element minOccurs="0" name="OrderTotal" type="xs:decimal" />
+              <xs:element minOccurs="0" name="OrderPlanQuotas" type="xs:int" />
+              <xs:element minOccurs="0" name="CurrencyId" type="xs:string" />
+              <xs:element minOccurs="0" name="CurrencyDesc" type="xs:string" />
+              <xs:element msdata:DataType="System.Guid, mscorlib, Version=1.0.5000.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" minOccurs="0" name="OrderTicket" type="xs:string" />
+              <xs:element minOccurs="0" name="TransferMethodType" type="xs:string" />
+              <xs:element minOccurs="0" name="CrdCardHolderFirstName" type="xs:string" />
+              <xs:element minOccurs="0" name="CrdCardHolderLastName" type="xs:string" />
+              <xs:element minOccurs="0" name="CrdCardEndNumber" type="xs:string" />
+              <xs:element minOccurs="0" name="CrdCardHolderDocType" type="xs:string" />
+              <xs:element minOccurs="0" name="CrdCardHolderDocNumber" type="xs:string" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
